@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install CPU-only torch + dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # CI runners have no GPU: pull the CPU wheel instead of the cu121 pin in requirements.txt.
+          pip install torch==2.4.1 torchvision==0.19.1 --index-url https://download.pytorch.org/whl/cpu
+          grep -v '^--extra-index-url' requirements-dev.txt | grep -vE '^(torch|torchvision)==' > /tmp/reqs.txt
+          pip install -r /tmp/reqs.txt
+
+      - name: Lint
+        run: ruff check backend tests
+
+      - name: Unit tests (no model weights needed)
+        run: pytest -m "not integration" -v
+
+      - name: Integration tests (model + API, if weights are present)
+        run: pytest -m integration -v
+        continue-on-error: true # weights are large binaries; only guaranteed present via Git LFS/artifact storage

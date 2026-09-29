@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+.venv/
+footscan_env/
+.pytest_cache/
+.ruff_cache/
+
+# Env / secrets
+.env
+
+# Data / runtime artifacts
+data/scans/
+data/reports/
+data/*.db
+tests/_tmp_data/
+
+# Logs
+*.log
+
+# Editor/OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Tooling scratch
+.playwright-mcp/
+.wheel_cache/

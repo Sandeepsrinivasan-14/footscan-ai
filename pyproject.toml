@@ -1,0 +1,24 @@
+[tool.pytest.ini_options]
+pythonpath = ["backend"]
+testpaths = ["tests"]
+markers = [
+    "integration: exercises the real model/weights or a running DB (slower, no external mocking)",
+]
+
+[tool.ruff]
+line-length = 115
+target-version = "py311"
+src = ["backend"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501"]
+
+[tool.ruff.lint.flake8-bugbear]
+# FastAPI's dependency-injection pattern requires calling Depends()/File()/Form()
+# etc. in argument defaults; that's correct usage here, not the mutable-default bug B008 flags.
+extend-immutable-calls = ["fastapi.Depends", "fastapi.File", "fastapi.Form", "fastapi.Query", "fastapi.Header"]
+
+[tool.ruff.lint.per-file-ignores]
+# env vars / sys.path must be set before importing footscan.config, which reads them at import time.
+"tests/conftest.py" = ["E402"]
