@@ -7,7 +7,8 @@ from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from footscan.api.deps import require_api_key
-from footscan.api.schemas import AnalysisResponse, CompareResponse
+from footscan.api.imaging import encode_image_b64
+from footscan.api.schemas import AnalysisImages, AnalysisResponse, CompareResponse
 from footscan.config import settings
 from footscan.db.models import Patient, ScanRecord
 from footscan.db.session import get_db
@@ -72,7 +73,16 @@ async def analyze(
         record = persist_scan(db, result, patient_id=patient_id)
         scan_id = record.id
 
-    return AnalysisResponse(**result.to_dict(), scan_id=scan_id, patient_id=patient_id)
+    images = AnalysisImages(
+        original=encode_image_b64(result.original),
+        mask=encode_image_b64(result.mask),
+        heatmap=encode_image_b64(result.heatmap),
+        blended=encode_image_b64(result.blended),
+        edges=encode_image_b64(result.edges),
+        cropped=encode_image_b64(result.cropped),
+    )
+
+    return AnalysisResponse(**result.to_dict(), scan_id=scan_id, patient_id=patient_id, images=images)
 
 
 @router.post("/compare", response_model=CompareResponse)
@@ -96,7 +106,28 @@ async def compare(
         old_area_cm2=result["old_area_cm2"],
         new_area_cm2=result["new_area_cm2"],
         change_cm2=result["change_cm2"],
+        diff_image=encode_image_b64(result["diff_map"]),
     )
+
+
+@router.get("/scans/{scan_id}/image/{kind}")
+def get_scan_image(scan_id: str, kind: str, db: Session = Depends(get_db)) -> FileResponse:
+    if kind not in {"original", "overlay"}:
+        raise HTTPException(status_code=404, detail="Unknown image kind")
+
+    scan = db.get(ScanRecord, scan_id)
+    if scan is None:
+        raise HTTPException(status_code=404, detail="Scan not found")
+
+    rel_path = scan.original_image_path if kind == "original" else scan.overlay_image_path
+    if not rel_path:
+        raise HTTPException(status_code=404, detail="No stored image of this kind for this scan")
+
+    full_path = settings.data_dir / rel_path
+    if not full_path.exists():
+        raise HTTPException(status_code=404, detail="Stored image file is missing")
+
+    return FileResponse(full_path, media_type="image/jpeg")
 
 
 @router.get("/scans/{scan_id}/report")

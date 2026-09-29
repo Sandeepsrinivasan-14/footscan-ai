@@ -1,6 +1,15 @@
 from pydantic import BaseModel, ConfigDict, Field
 
 
+class AnalysisImages(BaseModel):
+    original: str
+    mask: str
+    heatmap: str
+    blended: str
+    edges: str
+    cropped: str
+
+
 class AnalysisResponse(BaseModel):
     status: str
     view_type: str
@@ -17,6 +26,7 @@ class AnalysisResponse(BaseModel):
     preprocessing: str
     scan_id: str | None = None
     patient_id: str | None = None
+    images: AnalysisImages
 
 
 class CompareResponse(BaseModel):
@@ -24,6 +34,7 @@ class CompareResponse(BaseModel):
     old_area_cm2: float
     new_area_cm2: float
     change_cm2: float
+    diff_image: str
 
 
 class PatientCreate(BaseModel):

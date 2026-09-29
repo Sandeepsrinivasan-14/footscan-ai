@@ -18,6 +18,7 @@ COPY requirements.txt .
 RUN python3.11 -m pip install --upgrade pip && python3.11 -m pip install -r requirements.txt
 
 COPY backend/ backend/
+COPY frontend/ frontend/
 COPY FootScan_AI_Core/footscan_best_model.pth FootScan_AI_Core/footscan_best_model.pth
 COPY FootScan_AI_Core/footscan_attention_model.pth FootScan_AI_Core/footscan_attention_model.pth
 

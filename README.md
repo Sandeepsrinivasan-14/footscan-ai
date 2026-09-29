@@ -4,6 +4,18 @@ AI-assisted diabetic foot ulcer (DFU) segmentation and triage dashboard. Upload 
 get a wound segmentation mask, area/shape/tissue-color analysis, a heuristic severity score, and
 a downloadable PDF report. Includes before/after comparison and per-patient healing tracking.
 
+## Screenshots
+
+| Analyze — upload | Analyze — results |
+|---|---|
+| ![Analyze tab, empty state](docs/screenshots/01-analyze.jpg) | ![Analyze tab with segmentation results](docs/screenshots/02-analyze-results.jpg) |
+| Drag-and-drop upload, plantar/dorsal view selection, sensitivity and reference-scale calibration. | Wound area, SINBAD score, tissue-color/shape classification, and all six pipeline visualizations (mask, heatmap, overlay, edges, auto-zoom) rendered inline from a single API call. |
+
+| Compare | Patients / healing tracker |
+|---|---|
+| ![Compare tab with before/after diff map](docs/screenshots/03-compare.jpg) | ![Patients tab with healing trajectory chart](docs/screenshots/04-patients.jpg) |
+| Before/after area delta with a healed-vs-worsened diff map overlay. | Per-patient scan history with a healing-trajectory chart (Chart.js) and thumbnail timeline. |
+
 ## ⚠️ Clinical Disclaimer
 
 This is a research/demo application, **not a medical device**. It has not been clinically
@@ -23,16 +35,23 @@ FootScan_AI/
 │   ├── db/                # SQLAlchemy models + session (SQLite by default)
 │   ├── service.py         # orchestrates ml + analysis + persistence; used by both API and UI
 │   ├── api/                # FastAPI app: REST endpoints under /api, /health
-│   └── ui/                 # Gradio dashboard, mounted onto the FastAPI app at "/"
+│   └── ui/                 # legacy Gradio dashboard, mounted at "/dashboard"
+├── frontend/               # primary UI: static HTML/CSS/JS SPA served at "/", talks to /api/*
 ├── tests/                 # pytest: unit tests (pure functions) + integration tests (real model/API)
-├── FootScan_AI_Core/       # original prototype + trained weights + datasets (kept as-is)
+├── FootScan_AI_Core/       # original prototype + trained weights (dataset gitignored, see below)
+├── docs/                  # screenshots, project overview deck, written report
 ├── Dockerfile, docker-compose.yml
 └── .github/workflows/ci.yml
 ```
 
-One process serves both the JSON API (`/api/*`, docs at `/api/docs`) and the human-facing
-Gradio dashboard (`/`), via `gr.mount_gradio_app`. The Gradio UI and the REST API both call
-into the same `footscan.service` layer — no duplicated business logic.
+One process serves the JSON API (`/api/*`, docs at `/api/docs`), a static frontend at `/`
+(`frontend/`, mounted via `StaticFiles`), and a legacy Gradio dashboard at `/dashboard` kept as a
+fallback. The frontend is a dependency-free SPA (no build step — just HTML/CSS/vanilla JS, plus
+Chart.js from a CDN for the healing-trajectory chart) that calls `/api/analyze`, `/api/compare`
+and `/api/patients/*` directly. Both it and the Gradio dashboard ultimately go through the same
+`footscan.service` layer — no duplicated business logic. `AnalysisResponse`/`CompareResponse` carry
+every pipeline visualization inline as base64 JPEG data URIs (`footscan.api.imaging`) so the
+frontend never needs a second round-trip to render them.
 
 ### Why this differs from the original prototype (`FootScan_AI_Core/app_ultimate.py`)
 
@@ -82,6 +101,13 @@ clone:
 Superseded prototype iterations (`app.py`, `app_simple.py`, etc.) and the unused original
 TensorFlow scripts are archived in `FootScan_AI_Core/legacy/` for reference only.
 
+`FootScan_AI_Core/data/` (the training dataset — thousands of images, ~400MB) is **not** tracked in
+git; it's only needed if you want to retrain, not to run the app. See
+[`FootScan_AI_Core/README.md`](FootScan_AI_Core/README.md) for the original dataset source/links.
+
+`docs/` holds a one-page project overview (`FootScan_AI_Overview.pptx`), a longer written report
+(`FootScan_AI_MDI_Report.pdf`), and the screenshots above.
+
 ## Running
 
 ```powershell
@@ -89,9 +115,10 @@ TensorFlow scripts are archived in `FootScan_AI_Core/legacy/` for reference only
 ```
 
 Then open:
-- **Dashboard:** http://127.0.0.1:8000/
+- **App:** http://127.0.0.1:8000/
 - **API docs (Swagger):** http://127.0.0.1:8000/api/docs
 - **Health check:** http://127.0.0.1:8000/health
+- **Legacy Gradio dashboard:** http://127.0.0.1:8000/dashboard/
 
 ### Docker
 
