@@ -6,6 +6,8 @@ __pycache__/
 footscan_env/
 .pytest_cache/
 .ruff_cache/
+.coverage
+htmlcov/
 
 # Env / secrets
 .env

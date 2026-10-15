@@ -29,8 +29,9 @@ fastapi>=0.141,<0.142
 uvicorn[standard]>=0.32,<0.33
 gradio>=6,<7
 pydantic>=2.9,<3
-pydantic-settings>=2.6,<3
+pydantic-settings>=2.7,<3
 python-multipart>=0.0.12,<0.1
+pillow>=10.4,<13
 
 # Persistence
 sqlalchemy>=2.0,<3
