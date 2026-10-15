@@ -1,2 +1,7 @@
 *.pth filter=lfs diff=lfs merge=lfs -text
 *.hdf5 filter=lfs diff=lfs merge=lfs -text
+
+# Keep line endings stable for files executed on Linux / checksummed
+*.sh text eol=lf
+*.sha256 text eol=lf
+Dockerfile text eol=lf
