@@ -1,4 +1,6 @@
+import re
 import tempfile
+import uuid
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -100,6 +102,9 @@ def generate_pdf_report(result: AnalysisResult, patient_name: str | None) -> Pat
         )
 
         settings.reports_dir.mkdir(parents=True, exist_ok=True)
-        out_path = settings.reports_dir / f"FootScan_Report_{name.replace(' ', '_')}_{datetime.now(UTC):%Y%m%dT%H%M%S}.pdf"
+        # The patient name is untrusted input: never let it shape a filesystem path
+        # (it could contain "../", path separators or reserved characters).
+        safe_name = re.sub(r"[^A-Za-z0-9_-]+", "_", name).strip("_")[:40] or "patient"
+        out_path = settings.reports_dir / f"FootScan_Report_{safe_name}_{datetime.now(UTC):%Y%m%dT%H%M%S}_{uuid.uuid4().hex[:8]}.pdf"
         pdf.output(str(out_path))
         return out_path

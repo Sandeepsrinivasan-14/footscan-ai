@@ -12,6 +12,7 @@ TEST_DATA_DIR.mkdir(exist_ok=True)
 os.environ.setdefault("FOOTSCAN_DATA_DIR", str(TEST_DATA_DIR))
 os.environ.setdefault("FOOTSCAN_DATABASE_URL", f"sqlite:///{(TEST_DATA_DIR / 'test.db').as_posix()}")
 os.environ.setdefault("FOOTSCAN_ENVIRONMENT", "test")
+os.environ.setdefault("FOOTSCAN_RATE_LIMIT_PER_MINUTE", "0")  # tests that exercise limiting turn it on explicitly
 
 BACKEND_DIR = REPO_ROOT / "backend"
 if str(BACKEND_DIR) not in sys.path:
@@ -47,3 +48,12 @@ def elongated_mask() -> np.ndarray:
     mask = np.zeros((256, 256), dtype=np.uint8)
     cv2.rectangle(mask, (20, 120), (236, 136), 1, thickness=-1)
     return mask
+
+
+@pytest.fixture(autouse=True)
+def _reset_rate_limiter():
+    from footscan.api.deps import rate_limiter
+
+    rate_limiter.reset()
+    yield
+    rate_limiter.reset()
