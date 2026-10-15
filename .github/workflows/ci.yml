@@ -4,9 +4,115 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
+    inputs:
+      run_integration:
+        description: "Also run the real-model integration tests (downloads ~240MB of Git LFS weights)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  TORCH_VERSION: "2.4.1"
+  TORCHVISION_VERSION: "0.19.1"
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4 # lfs intentionally off: lint needs no weights
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: requirements-dev.txt
+
+      - name: Install ruff
+        run: python -m pip install "$(grep -E '^ruff==' requirements-dev.txt)"
+
+      - name: Lint
+        run: ruff check backend tests scripts
+
   test:
+    runs-on: ubuntu-latest
+    steps:
+      # Git LFS is deliberately NOT fetched here: every LFS download counts against the repo's
+      # free bandwidth quota, and the unit + API tests use a fake model. Real-weights tests run
+      # in the manual `integration` job below.
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      - name: Install CPU-only torch, then the remaining dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # CI runners have no GPU: install the CPU wheel first so the unpinned `torch` that
+          # segmentation-models-pytorch depends on is already satisfied by it.
+          pip install "torch==${TORCH_VERSION}" "torchvision==${TORCHVISION_VERSION}" \
+            --index-url https://download.pytorch.org/whl/cpu
+          # Install straight from the file: requirements-dev.txt contains `-r requirements.txt`, a
+          # path relative to that file, so it must NOT be copied/piped to another directory
+          # (that is what produced "Could not open requirements file: /tmp/requirements.txt").
+          pip install -r requirements-dev.txt
+
+      - name: Unit + API tests (fake model, no weights needed)
+        run: pytest -m "not integration" -v --cov=footscan --cov-report=term-missing
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build slim runtime image (no weights)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: runtime
+          load: true
+          push: false
+          tags: footscan-ai:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Image runs as non-root
+        run: |
+          uid="$(docker run --rm --entrypoint id footscan-ai:ci -u)"
+          echo "container uid: ${uid}"
+          test "${uid}" != "0"
+
+      - name: Smoke test /health (live) and /ready (not ready without weights)
+        run: |
+          docker run -d --name footscan -p 8000:8000 footscan-ai:ci
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:8000/health >/dev/null 2>&1; then break; fi
+            sleep 2
+          done
+          curl -fsS http://127.0.0.1:8000/health
+          echo
+          code="$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8000/ready)"
+          echo "/ready -> ${code}"
+          test "${code}" = "503"
+          docker logs footscan | tail -n 20
+
+  integration:
+    # Manual only (Actions -> CI -> Run workflow): needs the real weights from Git LFS.
+    if: github.event_name == 'workflow_dispatch' && inputs.run_integration
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,21 +123,22 @@ jobs:
         with:
           python-version: "3.11"
           cache: "pip"
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
 
-      - name: Install CPU-only torch + dependencies
+      - name: Install
         run: |
           python -m pip install --upgrade pip
-          # CI runners have no GPU: pull the CPU wheel instead of the cu121 pin in requirements.txt.
-          pip install torch==2.4.1 torchvision==0.19.1 --index-url https://download.pytorch.org/whl/cpu
-          grep -v '^--extra-index-url' requirements-dev.txt | grep -vE '^(torch|torchvision)==' > /tmp/reqs.txt
-          pip install -r /tmp/reqs.txt
+          pip install "torch==${TORCH_VERSION}" "torchvision==${TORCHVISION_VERSION}" \
+            --index-url https://download.pytorch.org/whl/cpu
+          pip install -r requirements-dev.txt
 
-      - name: Lint
-        run: ruff check backend tests
+      - name: Verify weights are real files, not LFS pointers
+        run: |
+          size="$(stat -c%s FootScan_AI_Core/footscan_best_model.pth)"
+          echo "footscan_best_model.pth: ${size} bytes"
+          test "${size}" -gt 1000000
 
-      - name: Unit tests (no model weights needed)
-        run: pytest -m "not integration" -v
-
-      - name: Integration tests (model + API, if weights are present)
+      - name: Integration tests (real model)
         run: pytest -m integration -v
-        continue-on-error: true # weights are large binaries; only guaranteed present via Git LFS/artifact storage
