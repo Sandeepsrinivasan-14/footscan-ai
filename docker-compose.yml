@@ -3,25 +3,28 @@ services:
     build: .
     image: footscan-ai:latest
     ports:
-      - "8000:8000"
+      # Bound to loopback by default. Put a TLS-terminating reverse proxy in front for anything else.
+      - "127.0.0.1:8000:8000"
     environment:
       FOOTSCAN_ENVIRONMENT: production
-      FOOTSCAN_LOG_LEVEL: INFO
-      FOOTSCAN_DEVICE: auto
-      # FOOTSCAN_API_KEY: set-a-real-secret-here   # uncomment to require X-API-Key on /api/*
+      FOOTSCAN_LOG_LEVEL: ${FOOTSCAN_LOG_LEVEL:-INFO}
+      FOOTSCAN_DEVICE: ${FOOTSCAN_DEVICE:-auto}
+      # Secrets come from the shell / an untracked .env file, never from this file.
+      FOOTSCAN_API_KEY: ${FOOTSCAN_API_KEY:-}
+      FOOTSCAN_CORS_ORIGINS: ${FOOTSCAN_CORS_ORIGINS:-}
+      FOOTSCAN_RATE_LIMIT_PER_MINUTE: ${FOOTSCAN_RATE_LIMIT_PER_MINUTE:-30}
     volumes:
       - footscan_data:/app/data
-    # Remove this block if running on a machine without an NVIDIA GPU + nvidia-container-toolkit;
-    # the app falls back to CPU automatically via FOOTSCAN_DEVICE=auto.
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+    # Hardening: the app only writes to /app/data (volume) and temp files.
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     healthcheck:
-      test: ["CMD", "python3.11", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=4)"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/ready', timeout=4)"]
       interval: 30s
       timeout: 5s
       retries: 3

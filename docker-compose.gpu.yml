@@ -1,0 +1,17 @@
+# GPU override. Requires an NVIDIA GPU + the NVIDIA Container Toolkit.
+#   docker compose -f docker-compose.yml -f docker-compose.gpu.yml up --build
+services:
+  footscan:
+    build:
+      args:
+        TORCH_INDEX_URL: https://download.pytorch.org/whl/cu121
+    image: footscan-ai:gpu
+    environment:
+      FOOTSCAN_DEVICE: cuda
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
