@@ -7,7 +7,7 @@
 AI-assisted diabetic foot ulcer (DFU) segmentation and triage. Upload a foot photo and get a wound
 segmentation mask, area/shape/tissue-colour analysis, a heuristic severity score, and a downloadable
 PDF report. Includes before/after comparison and per-patient healing tracking. FastAPI + PyTorch
-(ResNet34-UNet) backend, a dependency-free web frontend, and a legacy Gradio dashboard.
+(ResNet34-UNet) backend and a dependency-free web frontend served by the same process.
 
 > ## Medical disclaimer: research use only
 >
@@ -39,7 +39,7 @@ Screenshots use placeholder patient names and a publicly sourced wound image.
 ```
                  +-------------------------------+
  browser ------> | static frontend  (/)          |
-                 | Gradio dashboard (/dashboard) |  <- dev only by default
+                 |                               |
                  +---------------+---------------+
                                  | JSON / multipart
  API clients --> +---------------v---------------+
@@ -71,15 +71,13 @@ backend/footscan/
   analysis/          pure functions: shape, colour, SINBAD scoring, healing estimate
   reports/           PDF report generation
   db/                SQLAlchemy models + session
-  service.py         glue used by both the API and the Gradio UI
-  ui/                legacy Gradio dashboard
+  service.py         orchestrates inference, analysis and persistence for the API
 frontend/            static HTML/CSS/vanilla-JS SPA (Chart.js from a CDN)
 tests/               pytest: unit, API (TestClient, fake model) and integration (real model)
 FootScan_AI_Core/    original research prototype, training/eval scripts, weights (Git LFS), WEIGHTS.sha256
 ```
 
-One process serves the JSON API (`/api/*`, Swagger at `/api/docs`), the static frontend at `/`, and
-(outside production) the Gradio dashboard at `/dashboard`. Inference is CPU-bound, so request
+One process serves the JSON API (`/api/*`, Swagger at `/api/docs`) and the static frontend at `/`. Inference is CPU-bound, so request
 handlers run it in a thread pool and the app is meant to run with a single worker per container
 (the model is a per-process singleton; scale with replicas).
 
@@ -100,8 +98,7 @@ cp .env.example .env                           # optional; everything has a defa
 ./scripts/run_dev.sh                           # Windows: .\scripts\run_dev.ps1
 ```
 
-Then open <http://127.0.0.1:8000/> (app), <http://127.0.0.1:8000/api/docs> (Swagger),
-<http://127.0.0.1:8000/dashboard/> (legacy Gradio UI, development only).
+Then open <http://127.0.0.1:8000/> (app) and <http://127.0.0.1:8000/api/docs> (Swagger).
 
 For a GPU install the `cu121` wheels instead:
 `pip install torch==2.4.1 torchvision==0.19.1 --index-url https://download.pytorch.org/whl/cu121`.
@@ -143,7 +140,7 @@ All settings are environment variables prefixed `FOOTSCAN_` (or a git-ignored `.
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `FOOTSCAN_ENVIRONMENT` | `development` | `production` switches to JSON logs, no default CORS origins, dashboard off |
+| `FOOTSCAN_ENVIRONMENT` | `development` | `production` switches to JSON logs, no default CORS origins |
 | `FOOTSCAN_API_KEY` | unset | if set, `/api/*` requires a matching `X-API-Key` header. **Set in production.** |
 | `FOOTSCAN_CORS_ORIGINS` | localhost (dev) / none (prod) | comma-separated or JSON list of allowed origins |
 | `FOOTSCAN_MODEL_WEIGHTS_PATH` | `FootScan_AI_Core/footscan_best_model.pth` | checkpoint to load |
@@ -153,7 +150,6 @@ All settings are environment variables prefixed `FOOTSCAN_` (or a git-ignored `.
 | `FOOTSCAN_RATE_LIMIT_PER_MINUTE` | 30 | per-IP limit on `/api/analyze` and `/api/compare`; 0 disables |
 | `FOOTSCAN_LOG_LEVEL` / `FOOTSCAN_LOG_FORMAT` | `INFO` / `auto` | `auto` = JSON in production, text otherwise |
 | `FOOTSCAN_DATA_DIR` / `FOOTSCAN_DATABASE_URL` | `./data`, SQLite inside it | scan images, reports, DB |
-| `FOOTSCAN_ENABLE_DASHBOARD` | on in dev, off in production | Gradio dashboard (no API-key protection) |
 
 ## API
 
@@ -246,7 +242,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 - **Security scope**: one shared API key, no user accounts, roles, audit log or encryption at rest.
   Not suitable for multi-tenant or regulated (HIPAA/GDPR-grade) use. See [SECURITY.md](SECURITY.md).
 - **Rate limiting** is per-process and in-memory.
-- Patient lookup in the legacy Gradio UI is by exact name; it is not a safe identity key.
 
 ## Acknowledgements
 

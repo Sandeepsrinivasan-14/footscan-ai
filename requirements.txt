@@ -14,20 +14,13 @@ segmentation-models-pytorch>=0.3.4,<0.4
 albumentations==1.4.18
 opencv-python-headless>=4.10,<5
 numpy>=1.26,<2
-pandas>=2.2,<3
-matplotlib>=3.9,<4
 
 # PDF reporting
 fpdf2>=2.8,<3
 
 # Web / API
-# gradio<6 hit a real bug in gradio_client's JSON-schema introspection
-# (TypeError: argument of type 'bool' is not iterable, in get_type()) that crashed
-# the mounted UI's root page on startup; gradio>=6 pulls in fastapi>=0.14x/starlette>=1.x
-# as a hard dependency, so those floors were bumped to match rather than pinned separately.
 fastapi>=0.141,<0.142
 uvicorn[standard]>=0.32,<0.33
-gradio>=6,<7
 pydantic>=2.9,<3
 pydantic-settings>=2.7,<3
 python-multipart>=0.0.12,<0.1
@@ -36,9 +29,5 @@ pillow>=10.4,<13
 # Persistence
 sqlalchemy>=2.0,<3
 
-# Auth
-passlib[bcrypt]>=1.7,<2
-
 # Observability
 python-json-logger>=2.0,<3
-requests>=2.32,<3  # transitively required by gradio's CLI submodule, imported at `import gradio` time

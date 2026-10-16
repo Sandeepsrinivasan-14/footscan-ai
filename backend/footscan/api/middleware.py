@@ -1,7 +1,7 @@
 """ASGI middleware: request ids, structured access logs, early body-size guard, safe response headers.
 
-Implemented as plain ASGI (not ``BaseHTTPMiddleware``) so streaming responses used by the
-mounted Gradio dashboard are not buffered.
+Implemented as plain ASGI (not ``BaseHTTPMiddleware``) so streamed responses (e.g. the PDF report)
+are never buffered.
 """
 
 import logging

@@ -35,7 +35,6 @@ What it does **not** do (so do not deploy it as a multi-user clinical system wit
 
 - No per-user accounts, roles, audit trail, or encryption at rest for the SQLite database and stored scan images.
 - No TLS termination: run it behind a reverse proxy that provides HTTPS, request-size limits and, for multi-replica setups, shared rate limiting.
-- The optional Gradio dashboard (`/dashboard`) has no API-key protection and is disabled by default in production.
 - Not assessed against HIPAA, GDPR or medical-device regulations.
 
 ## Secrets and patient data
