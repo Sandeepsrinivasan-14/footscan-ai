@@ -34,7 +34,7 @@ python-multipart>=0.0.12,<0.1
 pillow>=10.4,<13
 
 # Persistence
-sqlalchemy>=2.0,<3
+sqlalchemy>=2.1.4,<3
 
 # Auth
 passlib[bcrypt]>=1.7,<2
