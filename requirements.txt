@@ -1,4 +1,4 @@
-# torch/torchvision are installed separately (see scripts/install.ps1 / README) so a
+# torch/torchvision are installed separately (see README, "Quick start") so a
 # plain `pip install -r requirements.txt` doesn't cross-resolve against the CUDA index.
 # Default: `pip install torch torchvision` (CPU wheel, from PyPI -- reliable).
 # For GPU: `pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121`

@@ -1,8 +1,8 @@
 > **Note:** This folder holds the original research-dataset README (below), the trained model
-> weights, the datasets, and the early PyTorch prototype (`app_ultimate.py`). The actual
-> application — FastAPI backend, Gradio dashboard, tests, Docker — lives in `../backend/` and
-> is documented in the [repo root README](../README.md). Superseded prototype iterations and the
-> unused original TensorFlow scripts are kept in `legacy/` for reference only.
+> weights, and the research training/evaluation code. The application (FastAPI backend, web
+> frontend, tests, Docker) lives in `../backend/` and `../frontend/` and is documented in the
+> [repo root README](../README.md). The unused original TensorFlow scripts and
+> architectures (`train.py`, `predict.py`, `models/`) were removed; they remain in the git history.
 
 # Call for Papers: Special Issue on *<ins>Recent Advances in Artificial Intelligence for Wound Assessment</ins>*
 In collaboration with **Bioengineering**, an open access journal by **MDPI**, we are soliciting papers in various AI technologies for wound assessment. More detail can be found below or at the journal's [webpage](https://www.mdpi.com/journal/bioengineering/special_issues/HFOU68406T).

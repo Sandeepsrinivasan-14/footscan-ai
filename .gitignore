@@ -3,7 +3,6 @@ __pycache__/
 *.pyc
 *.egg-info/
 .venv/
-footscan_env/
 .pytest_cache/
 .ruff_cache/
 .coverage
