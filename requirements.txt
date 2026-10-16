@@ -12,7 +12,7 @@ segmentation-models-pytorch>=0.3.4,<0.4
 # versions that require stringzilla, which has no prebuilt Windows wheel and needs
 # MSVC Build Tools to compile from source.
 albumentations==1.4.18
-opencv-python-headless>=4.10,<5
+opencv-python-headless>=5.0.0.93,<6
 numpy>=1.26,<2
 pandas>=2.2,<3
 matplotlib>=3.9,<4
