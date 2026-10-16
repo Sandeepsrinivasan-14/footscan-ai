@@ -1,10 +1,11 @@
 import pytest
 
 from footscan.config import settings
+from footscan.ml.model import weights_available
 from footscan.service import analyze_image, compare_images
 
 pytestmark = pytest.mark.integration
-requires_model = pytest.mark.skipif(not settings.model_weights_path.exists(), reason="model weights not present")
+requires_model = pytest.mark.skipif(not weights_available(), reason="model weights not present (or only a Git LFS pointer)")
 
 
 @requires_model

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from footscan.api.deps import require_api_key
@@ -19,8 +19,12 @@ def create_patient(payload: PatientCreate, db: Session = Depends(get_db)) -> Pat
 
 
 @router.get("", response_model=list[PatientResponse])
-def list_patients(db: Session = Depends(get_db)) -> list[Patient]:
-    return db.query(Patient).order_by(Patient.created_at.desc()).all()
+def list_patients(
+    limit: int = Query(200, ge=1, le=1000),
+    offset: int = Query(0, ge=0),
+    db: Session = Depends(get_db),
+) -> list[Patient]:
+    return db.query(Patient).order_by(Patient.created_at.desc()).offset(offset).limit(limit).all()
 
 
 @router.get("/{patient_id}", response_model=PatientResponse)

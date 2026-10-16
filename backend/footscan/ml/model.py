@@ -1,5 +1,6 @@
 import logging
 import threading
+from pathlib import Path
 
 import albumentations as A
 import numpy as np
@@ -19,6 +20,33 @@ _device: torch.device | None = None
 
 class ModelLoadError(RuntimeError):
     """Raised when the segmentation model weights cannot be loaded."""
+
+
+_LFS_POINTER_PREFIX = b"version https://git-lfs.github.com/spec/"
+
+
+def weights_file_state(path: Path | None = None) -> str:
+    """Classify the weights file: 'ok', 'missing', or 'lfs_pointer' (cloned without `git lfs pull`)."""
+    path = path or settings.model_weights_path
+    if not path.is_file():
+        return "missing"
+    with path.open("rb") as fh:
+        if fh.read(len(_LFS_POINTER_PREFIX)) == _LFS_POINTER_PREFIX:
+            return "lfs_pointer"
+    return "ok"
+
+
+def weights_available() -> bool:
+    return weights_file_state() == "ok"
+
+
+def is_model_loaded() -> bool:
+    """True if the model singleton is already in memory (never triggers a load)."""
+    return _model is not None
+
+
+def current_device() -> str:
+    return str(_device) if _device is not None else "unknown"
 
 
 def resolve_device() -> torch.device:
@@ -41,8 +69,17 @@ def get_model() -> tuple[torch.nn.Module, torch.device]:
         if _model is not None:
             return _model, _device  # type: ignore[return-value]
 
-        if not settings.model_weights_path.exists():
-            raise ModelLoadError(f"Model weights not found at {settings.model_weights_path}")
+        state = weights_file_state()
+        if state == "missing":
+            raise ModelLoadError(
+                f"Model weights not found at {settings.model_weights_path}. "
+                "See 'Model weights' in the README (git lfs pull / scripts/download_weights.py)."
+            )
+        if state == "lfs_pointer":
+            raise ModelLoadError(
+                f"{settings.model_weights_path} is a Git LFS pointer, not the real weights. "
+                "Run `git lfs pull` or scripts/download_weights.py."
+            )
 
         device = resolve_device()
         model = smp.Unet(
@@ -52,7 +89,8 @@ def get_model() -> tuple[torch.nn.Module, torch.device]:
             classes=1,
         )
         try:
-            state_dict = torch.load(settings.model_weights_path, map_location=device)
+            # weights_only=True: refuse to unpickle arbitrary objects from a (possibly tampered) checkpoint.
+            state_dict = torch.load(settings.model_weights_path, map_location=device, weights_only=True)
             model.load_state_dict(state_dict)
         except Exception as exc:  # noqa: BLE001 - re-raised with context
             raise ModelLoadError(f"Failed to load weights from {settings.model_weights_path}: {exc}") from exc

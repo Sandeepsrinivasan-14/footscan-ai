@@ -1,0 +1,29 @@
+# VCS / CI / tooling
+.git
+.gitattributes
+.github
+.venv
+.pytest_cache
+.ruff_cache
+**/__pycache__
+**/*.pyc
+
+# Secrets and local state must never enter the build context
+.env
+.env.*
+!.env.example
+data
+
+# Not needed at runtime
+tests
+docs
+scripts
+*.md
+LICENSE
+docker-compose*.yml
+Dockerfile
+.dockerignore
+
+# Only the API's segmentation checkpoint is shipped; training code, datasets and the other 150MB checkpoint stay out.
+FootScan_AI_Core/*
+!FootScan_AI_Core/footscan_best_model.pth
