@@ -1,0 +1,15 @@
+{
+  "name": "footscan-e2e",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Playwright smoke tests for the FootScan AI web app (run against scripts/e2e_server.py)",
+  "scripts": {
+    "test": "playwright test",
+    "install:browsers": "playwright install --with-deps chromium"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.10.2",
+    "@playwright/test": "1.49.1"
+  },
+  "type": "module"
+}
