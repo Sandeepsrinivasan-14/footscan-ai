@@ -1,5 +1,5 @@
 /* Accessible drag-and-drop image picker.
-   Keyboard: Enter/Space opens the file dialog. Click, drop and (when focused) paste all work. */
+   Keyboard: Tab to the zone, Enter/Space opens the file dialog. Click, drop and (when focused) paste all work. */
 
 import { fmtBytes, h, icon, nextId, toast } from "../dom.js";
 
@@ -15,7 +15,7 @@ export function createDropzone({ label, hint = "JPEG, PNG, WEBP or BMP · up to 
   let file = null;
   let previewUrl = "";
 
-  const input = h("input", { class: "sr-only", id: inputId, type: "file", accept: ACCEPTED_TYPES.join(","), tabindex: "-1" });
+  const input = h("input", { class: "sr-only", id: inputId, type: "file", accept: ACCEPTED_TYPES.join(","), tabindex: "-1", "aria-label": label });
   const preview = h("img", { class: "dropzone__preview", alt: "", hidden: true });
   const emptyState = h(
     "div",
@@ -28,14 +28,10 @@ export function createDropzone({ label, hint = "JPEG, PNG, WEBP or BMP · up to 
   const meta = h("div", { class: "dropzone__meta", hidden: true });
   const removeBtn = h("button", { class: "dropzone__remove", type: "button", "aria-label": `Remove ${label.toLowerCase()}`, hidden: true }, icon("x", 16));
 
-  const zone = h(
-    "div",
-    { class: "dropzone", role: "button", tabindex: "0", "aria-describedby": descId, "aria-label": `${label}. Choose an image file` },
-    preview,
-    emptyState,
-    meta,
-    removeBtn,
-  );
+  // A real <button> covers the zone (keyboard + screen-reader entry point); the remove button is its
+  // sibling, never nested inside it.
+  const pick = h("button", { class: "dropzone__pick", type: "button", "aria-describedby": descId, "aria-label": `${label}. Choose an image file` });
+  const zone = h("div", { class: "dropzone" }, preview, emptyState, meta, pick, removeBtn);
   const root = h("div", { class: "dropzone-wrap" }, zone, input);
 
   function accept(candidate) {
@@ -63,26 +59,17 @@ export function createDropzone({ label, hint = "JPEG, PNG, WEBP or BMP · up to 
     if (next) {
       preview.src = previewUrl;
       meta.replaceChildren(h("strong", { text: next.name }), h("span", { class: "mono", text: fmtBytes(next.size) }));
-      zone.setAttribute("aria-label", `${label}: ${next.name}. Press Enter to choose a different image`);
+      pick.setAttribute("aria-label", `${label}: ${next.name}. Choose a different image`);
     } else {
       preview.removeAttribute("src");
       input.value = "";
-      zone.setAttribute("aria-label", `${label}. Choose an image file`);
+      pick.setAttribute("aria-label", `${label}. Choose an image file`);
     }
     onChange?.(next);
   }
 
-  zone.addEventListener("click", (e) => {
-    if (e.target.closest(".dropzone__remove")) return;
-    input.click();
-  });
-  zone.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      input.click();
-    }
-  });
-  zone.addEventListener("paste", (e) => {
+  pick.addEventListener("click", () => input.click());
+  pick.addEventListener("paste", (e) => {
     const item = [...(e.clipboardData?.files || [])].find((f) => f.type.startsWith("image/"));
     if (item) accept(item);
   });
@@ -90,7 +77,7 @@ export function createDropzone({ label, hint = "JPEG, PNG, WEBP or BMP · up to 
   removeBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     setFile(null);
-    zone.focus();
+    pick.focus();
   });
 
   let depth = 0;
