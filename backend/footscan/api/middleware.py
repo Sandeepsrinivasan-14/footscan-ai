@@ -1,4 +1,4 @@
-"""ASGI middleware: request ids, structured access logs, early body-size guard, safe response headers.
+"""ASGI middleware: request ids, structured access logs, early body-size guard, security headers.
 
 Implemented as plain ASGI (not ``BaseHTTPMiddleware``) so streamed responses (e.g. the PDF report)
 are never buffered.
@@ -24,6 +24,44 @@ _QUIET_PATHS = {"/health", "/ready"}  # probes are polled constantly; log them a
 # /api/compare carries two images plus multipart framing.
 _MAX_IMAGES_PER_REQUEST = 2
 _MULTIPART_OVERHEAD = 1024 * 1024
+
+
+# Content-Security-Policy for the web app and the JSON API. The frontend is plain same-origin ES
+# modules + CSS with no inline script/style, so nothing needs 'unsafe-inline' or a third-party host.
+# Images may be data: (inline analysis results) or blob: (authenticated scan thumbnails).
+# three.js is vendored under /vendor/ (Subresource Integrity checked) and the font is self-hosted.
+APP_CSP = "; ".join(
+    [
+        "default-src 'self'",
+        "script-src 'self'",
+        "style-src 'self'",
+        "img-src 'self' data: blob:",
+        "font-src 'self'",
+        "connect-src 'self'",
+        "object-src 'none'",
+        "worker-src 'none'",
+        "base-uri 'none'",
+        "form-action 'self'",
+        "frame-ancestors 'none'",
+    ]
+)
+
+# Swagger UI (/api/docs) is the one page that loads its assets from a CDN and runs an inline
+# bootstrap script, so it gets its own, still restrictive, policy instead of loosening APP_CSP.
+DOCS_CSP = "; ".join(
+    [
+        "default-src 'none'",
+        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
+        "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
+        "img-src 'self' data: https://fastapi.tiangolo.com",
+        "connect-src 'self'",
+        "base-uri 'none'",
+        "frame-ancestors 'none'",
+    ]
+)
+_DOCS_PATHS = {"/api/docs", "/api/docs/oauth2-redirect"}
+
+_PERMISSIONS_POLICY = "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()"
 
 
 class RequestContextMiddleware:
@@ -54,8 +92,14 @@ class RequestContextMiddleware:
                 out["X-Request-ID"] = request_id
                 out["X-Content-Type-Options"] = "nosniff"
                 out["Referrer-Policy"] = "no-referrer"
+                out["X-Frame-Options"] = "DENY"
+                out["Permissions-Policy"] = _PERMISSIONS_POLICY
+                out["Cross-Origin-Opener-Policy"] = "same-origin"
+                out["Content-Security-Policy"] = DOCS_CSP if path in _DOCS_PATHS else APP_CSP
                 if path.startswith("/api/"):
                     out["Cache-Control"] = "no-store"  # responses may contain patient data
+                elif "cache-control" not in out:
+                    out["Cache-Control"] = "no-cache"  # static assets: always revalidate (ETag), so deploys apply at once
             await send(message)
 
         try:
