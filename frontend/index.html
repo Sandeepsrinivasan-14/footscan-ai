@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>FootScan AI — Diabetic foot ulcer segmentation (research use only)</title>
+  <meta name="description" content="Research prototype for diabetic foot ulcer segmentation, measurement and healing tracking. Not a medical device." />
+  <meta name="color-scheme" content="dark light" />
+  <meta name="theme-color" content="#070b16" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="preload" href="vendor/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/views.css" />
+  <script type="module" src="js/main.js"></script>
+</head>
+<body>
+  <!-- Icon sprite -->
+  <svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false">
+    <symbol id="i-logo" viewBox="0 0 32 32"><path d="M16 3c-4.2 0-7 3.6-7 8.2 0 3.4 1.5 5 2.6 7.2 1 2 .7 4.6-.8 6.3-1.2 1.4-.4 3.3 1.5 3.3h7.4c2.7 0 4.3-1.6 4.3-4.5 0-4-2.6-5.7-3.6-9.2C19.5 11.4 20 3 16 3Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="16" cy="13" r="3" fill="currentColor"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M4.5 15v3a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-scan" viewBox="0 0 24 24"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M3 12h18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-compare" viewBox="0 0 24 24"><rect x="3" y="5" width="7.5" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="13.5" y="5" width="7.5" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 19c.6-3.2 3-5 6-5s5.4 1.8 6 5M16 5.6a3.2 3.2 0 0 1 0 5.8M18.5 14.4c1.6.7 2.6 2.2 3 4.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+    <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m11 12 9-9M16 7l2.5 2.5M14 9l2 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 3.5 21.5 20h-19L12 3.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 10v4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="17.2" r="1.1" fill="currentColor"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m8 12.5 2.8 2.8L16.2 9.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7.5v5.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><circle cx="12" cy="16.4" r="1.1" fill="currentColor"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 11v5.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><circle cx="12" cy="7.8" r="1.1" fill="currentColor"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11m0 0 4.5-4.5M12 15l-4.5-4.5M4.5 19.5h15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 5v14m0 0-5-5m5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5m0 0-5 5m5-5 5 5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-flat" viewBox="0 0 24 24"><path d="M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m20 20-4.2-4.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="9" cy="10" r="1.7" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m20 16-4.6-4.6a1.6 1.6 0 0 0-2.3 0L5 19.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M3 12h4l2.5-6 4 12 2.5-6H21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-ruler" viewBox="0 0 24 24"><rect x="2.5" y="8" width="19" height="8" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M7 8v3M11 8v4.5M15 8v3M19 8v4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-shape" viewBox="0 0 24 24"><path d="M12 3.5c4 0 8 3 8 7.6 0 4.800-4.200 9.400-8 9.400S4 16 4 11.100C4 6.500 8 3.500 12 3.500Z" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 3.5s6.500 6.700 6.500 11a6.500 6.500 0 0 1-13 0c0-4.300 6.500-11 6.500-11Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7.500V12l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.500" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="1" fill="currentColor"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M7 3.500h6.500L18.500 8.500V19a1.500 1.500 0 0 1-1.500 1.500H7A1.500 1.500 0 0 1 5.500 19V5A1.500 1.500 0 0 1 7 3.500Z M13.500 3.500v5h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  </svg>
+
+  <div class="bg" aria-hidden="true">
+    <span class="bg__blob bg__blob--a"></span>
+    <span class="bg__blob bg__blob--b"></span>
+    <span class="bg__blob bg__blob--c"></span>
+    <span class="bg__grid"></span>
+  </div>
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="topbar glass" role="banner">
+    <a class="brand" href="#/analyze" aria-label="FootScan AI, home">
+      <span class="brand__mark"><svg width="22" height="22"><use href="#i-logo" /></svg></span>
+      <span class="brand__name">FootScan<span class="brand__ai">AI</span></span>
+    </a>
+
+    <nav class="nav" aria-label="Primary">
+      <a class="nav__link" href="#/analyze" data-route="analyze"><svg width="18" height="18" aria-hidden="true"><use href="#i-scan" /></svg><span>Analyze</span></a>
+      <a class="nav__link" href="#/compare" data-route="compare"><svg width="18" height="18" aria-hidden="true"><use href="#i-compare" /></svg><span>Compare</span></a>
+      <a class="nav__link" href="#/patients" data-route="patients"><svg width="18" height="18" aria-hidden="true"><use href="#i-users" /></svg><span>Patients</span></a>
+    </nav>
+
+    <div class="topbar__tools">
+      <span class="status-pill" id="statusPill" data-state="unknown" role="status">
+        <span class="status-pill__dot" aria-hidden="true"></span>
+        <span class="status-pill__text" id="statusText">Checking…</span>
+      </span>
+      <button class="icon-btn" id="keyBtn" type="button" aria-label="Set API key" title="API key">
+        <svg width="18" height="18" aria-hidden="true"><use href="#i-key" /></svg>
+      </button>
+      <button class="icon-btn" id="themeBtn" type="button" aria-label="Switch to light theme" aria-pressed="false" title="Toggle theme">
+        <svg class="icon-moon" width="18" height="18" aria-hidden="true"><use href="#i-moon" /></svg>
+        <svg class="icon-sun" width="18" height="18" aria-hidden="true"><use href="#i-sun" /></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="disclaimer" role="note" aria-label="Medical disclaimer">
+    <svg width="18" height="18" aria-hidden="true"><use href="#i-warn" /></svg>
+    <p><strong>Research use only. Not a medical device.</strong> FootScan AI is not clinically validated or cleared by any regulator. Do not use it to diagnose, triage or treat patients, and do not upload identifiable patient data to an instance you have not secured.</p>
+  </div>
+
+  <main id="main" class="main" tabindex="-1">
+    <noscript><p class="noscript glass">FootScan AI needs JavaScript. The REST API is documented at <a href="/api/docs">/api/docs</a>.</p></noscript>
+    <section id="view-analyze" class="view" data-view="analyze" hidden></section>
+    <section id="view-compare" class="view" data-view="compare" hidden></section>
+    <section id="view-patients" class="view" data-view="patients" hidden></section>
+  </main>
+
+  <footer class="footer">
+    <p>FootScan AI · ResNet34-UNet segmentation · SINBAD-style score and healing estimate are heuristics, not clinical guidance.</p>
+    <p><a href="/api/docs">API docs</a> · <a href="https://github.com/Sandeepsrinivasan-14/footscan-ai" rel="noopener noreferrer">Source</a> · MIT</p>
+  </footer>
+
+  <dialog class="dialog glass" id="keyDialog" aria-labelledby="keyDialogTitle">
+    <form method="dialog" id="keyForm">
+      <h2 id="keyDialogTitle">API key</h2>
+      <p class="muted">This server requires an API key. It is kept in this tab's session storage only and sent as the <code>X-API-Key</code> header.</p>
+      <label class="field">
+        <span class="field__label">Key</span>
+        <input class="input" id="keyInput" type="password" autocomplete="off" spellcheck="false" />
+      </label>
+      <div class="dialog__actions">
+        <button class="btn btn--ghost" value="cancel" type="submit">Cancel</button>
+        <button class="btn btn--ghost" id="keyClear" value="clear" type="submit">Forget key</button>
+        <button class="btn btn--primary" id="keySave" value="save" type="submit">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toasts" id="toasts" role="region" aria-label="Notifications" aria-live="polite"></div>
+</body>
+</html>
