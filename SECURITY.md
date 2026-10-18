@@ -27,6 +27,7 @@ What the service does today:
 - Upload validation: size cap, real-format sniffing (JPEG/PNG/WEBP/BMP only), pixel and dimension caps (decompression-bomb guard).
 - In-process per-IP rate limiting on `/api/analyze` and `/api/compare`.
 - CORS is explicit and env-configured; no wildcard by default; credentials not allowed.
+- Strict Content-Security-Policy (same-origin scripts and styles only, no inline code, no third-party hosts), `X-Frame-Options: DENY`, `Permissions-Policy` and `no-store` on API responses. The vendored three.js is loaded with a Subresource Integrity hash.
 - Model checkpoints are loaded with `torch.load(weights_only=True)`; verify downloads with `FootScan_AI_Core/WEIGHTS.sha256`.
 - Containers run as a non-root user with a read-only root filesystem (compose) and no extra capabilities.
 - Logs never include request bodies, filenames, query strings or patient names.
@@ -35,7 +36,7 @@ What it does **not** do (so do not deploy it as a multi-user clinical system wit
 
 - No per-user accounts, roles, audit trail, or encryption at rest for the SQLite database and stored scan images.
 - No TLS termination: run it behind a reverse proxy that provides HTTPS, request-size limits and, for multi-replica setups, shared rate limiting.
-- Not assessed against HIPAA, GDPR or medical-device regulations.
+- Not HIPAA-compliant and not assessed against HIPAA, GDPR or medical-device regulations. Patient records and images are stored unencrypted.
 
 ## Secrets and patient data
 

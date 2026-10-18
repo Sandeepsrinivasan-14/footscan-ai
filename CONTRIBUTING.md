@@ -25,12 +25,14 @@ git lfs pull        # only needed for the real-model integration tests / running
 ruff check backend tests scripts
 pytest -m "not integration"          # unit + API tests with a fake model, no weights needed
 pytest -m integration                # real model; needs the weights (git lfs pull)
+(cd e2e && npm ci && npx playwright install chromium && npx playwright test)   # browser tests
 ```
 
 ## Conventions
 
 - Python 3.11, `ruff` for lint/import order (config in `pyproject.toml`), line length 115.
-- Every API behaviour change needs a test in `tests/test_api.py` (FastAPI `TestClient`).
+- Every API behaviour change needs a test in `tests/test_api.py` (FastAPI `TestClient`); UI changes need a case in `e2e/tests/smoke.spec.js`.
+- Frontend: plain ES modules and CSS, no build step, no inline script/style (strict CSP), build DOM with `textContent` (never `innerHTML`). Vendored libraries must be pinned with a SRI hash.
 - Keep inference/analysis logic in `backend/footscan/service.py` and below; routes stay thin.
 - Commit messages: short imperative subject, explanatory body when the "why" is not obvious.
 
