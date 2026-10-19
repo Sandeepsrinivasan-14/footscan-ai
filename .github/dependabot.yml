@@ -26,3 +26,11 @@ updates:
     directory: "/"
     schedule:
       interval: weekly
+
+  - package-ecosystem: npm
+    directory: "/e2e"
+    schedule:
+      interval: weekly
+    groups:
+      e2e-tooling:
+        patterns: ["*"]

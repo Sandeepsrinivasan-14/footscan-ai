@@ -36,13 +36,6 @@ def test_api_key_is_secret_and_empty_means_disabled(monkeypatch):
     assert "abc123" not in repr(configured)
 
 
-def test_dashboard_is_off_by_default_in_production_only(monkeypatch):
-    assert _settings(monkeypatch).dashboard_enabled is True
-    assert _settings(monkeypatch, FOOTSCAN_ENVIRONMENT="production").dashboard_enabled is False
-    opted_in = _settings(monkeypatch, FOOTSCAN_ENVIRONMENT="production", FOOTSCAN_ENABLE_DASHBOARD="true")
-    assert opted_in.dashboard_enabled is True
-
-
 def test_weights_file_state(tmp_path):
     assert weights_file_state(tmp_path / "missing.pth") == "missing"
 

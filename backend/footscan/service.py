@@ -14,7 +14,7 @@ from footscan.analysis.scoring import (
 )
 from footscan.analysis.shape import analyze_shape, auto_crop_wound, extract_edges
 from footscan.config import settings
-from footscan.db.models import Patient, ScanRecord
+from footscan.db.models import ScanRecord
 from footscan.ml.model import run_inference
 from footscan.ml.preprocessing import to_rgb
 
@@ -130,22 +130,6 @@ def compare_images(
         "change_cm2": round(diff_area, 4),
         "diff_map": diff_map,
     }
-
-
-def get_or_create_patient(db: Session, name: str) -> Patient:
-    """Look up a patient by exact name, creating one if none exists.
-
-    Name-based matching is a convenience for the single-clinician UI flow,
-    not a safe identity key for a multi-tenant deployment.
-    """
-    name = name.strip()
-    patient = db.query(Patient).filter(Patient.name == name).one_or_none()
-    if patient is None:
-        patient = Patient(name=name)
-        db.add(patient)
-        db.commit()
-        db.refresh(patient)
-    return patient
 
 
 def persist_scan(db: Session, result: AnalysisResult, *, patient_id: str | None = None) -> ScanRecord:

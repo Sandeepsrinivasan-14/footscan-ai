@@ -3,7 +3,6 @@ __pycache__/
 *.pyc
 *.egg-info/
 .venv/
-footscan_env/
 .pytest_cache/
 .ruff_cache/
 .coverage
@@ -34,3 +33,9 @@ Thumbs.db
 # Training dataset (large, publicly downloadable — see FootScan_AI_Core/README.md).
 # Trained checkpoints (*.pth) are still tracked via Git LFS, so the app runs without this.
 FootScan_AI_Core/data/
+
+# Frontend e2e tooling
+e2e/node_modules/
+e2e/test-results/
+e2e/playwright-report/
+.claude/

@@ -46,10 +46,6 @@ class Settings(BaseSettings):
     max_image_pixels: int = 40_000_000  # decompression-bomb guard, checked before full decode
     max_image_side: int = 12_000
 
-    # The legacy Gradio dashboard at /dashboard has no API-key protection of its own, so it is
-    # off by default in production. Set FOOTSCAN_ENABLE_DASHBOARD=true to opt in.
-    enable_dashboard: bool | None = None
-
     # Per-client rate limit for the expensive inference endpoints, requests/minute. 0 disables.
     rate_limit_per_minute: int = 30
 
@@ -74,10 +70,6 @@ class Settings(BaseSettings):
         if self.cors_origins is not None:
             return self.cors_origins
         return [] if self.is_production else list(_DEV_CORS_ORIGINS)
-
-    @property
-    def dashboard_enabled(self) -> bool:
-        return self.enable_dashboard if self.enable_dashboard is not None else not self.is_production
 
     @property
     def api_key_value(self) -> str | None:

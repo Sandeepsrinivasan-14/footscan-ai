@@ -1,403 +1,120 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>FootScan AI — Diabetic Foot Ulcer Analytics</title>
-<meta name="description" content="AI-assisted wound measurement, severity scoring and healing-trajectory tracking for diabetic foot ulcers." />
-<meta name="color-scheme" content="dark" />
-<!-- If FOOTSCAN_API_KEY is set on the server, put the same value here so /api/* calls authenticate. -->
-<meta name="footscan-api-key" content="" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><defs><linearGradient id=%22g%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22><stop offset=%220%22 stop-color=%22%236d8bff%22/><stop offset=%221%22 stop-color=%22%2338d9c9%22/></linearGradient></defs><rect width=%2232%22 height=%2232%22 rx=%228%22 fill=%22%230a0e1a%22/><circle cx=%2216%22 cy=%2216%22 r=%229%22 fill=%22none%22 stroke=%22url(%23g)%22 stroke-width=%223%22/></svg>" />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="css/styles.css" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>FootScan AI — Diabetic foot ulcer segmentation (research use only)</title>
+  <meta name="description" content="Research prototype for diabetic foot ulcer segmentation, measurement and healing tracking. Not a medical device." />
+  <meta name="color-scheme" content="dark light" />
+  <meta name="theme-color" content="#070b16" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="preload" href="vendor/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/views.css" />
+  <script type="module" src="js/main.js"></script>
 </head>
 <body>
+  <!-- Icon sprite -->
+  <svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false">
+    <symbol id="i-logo" viewBox="0 0 32 32"><path d="M16 3c-4.2 0-7 3.6-7 8.2 0 3.4 1.5 5 2.6 7.2 1 2 .7 4.6-.8 6.3-1.2 1.4-.4 3.3 1.5 3.3h7.4c2.7 0 4.3-1.6 4.3-4.5 0-4-2.6-5.7-3.6-9.2C19.5 11.4 20 3 16 3Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="16" cy="13" r="3" fill="currentColor"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M4.5 15v3a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-scan" viewBox="0 0 24 24"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M3 12h18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-compare" viewBox="0 0 24 24"><rect x="3" y="5" width="7.5" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="13.5" y="5" width="7.5" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 19c.6-3.2 3-5 6-5s5.4 1.8 6 5M16 5.6a3.2 3.2 0 0 1 0 5.8M18.5 14.4c1.6.7 2.6 2.2 3 4.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+    <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m11 12 9-9M16 7l2.5 2.5M14 9l2 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 3.5 21.5 20h-19L12 3.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 10v4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="17.2" r="1.1" fill="currentColor"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m8 12.5 2.8 2.8L16.2 9.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7.5v5.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><circle cx="12" cy="16.4" r="1.1" fill="currentColor"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 11v5.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><circle cx="12" cy="7.8" r="1.1" fill="currentColor"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11m0 0 4.5-4.5M12 15l-4.5-4.5M4.5 19.5h15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 5v14m0 0-5-5m5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5m0 0-5 5m5-5 5 5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-flat" viewBox="0 0 24 24"><path d="M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m20 20-4.2-4.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="9" cy="10" r="1.7" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m20 16-4.6-4.6a1.6 1.6 0 0 0-2.3 0L5 19.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M3 12h4l2.5-6 4 12 2.5-6H21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-ruler" viewBox="0 0 24 24"><rect x="2.5" y="8" width="19" height="8" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M7 8v3M11 8v4.5M15 8v3M19 8v4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-shape" viewBox="0 0 24 24"><path d="M12 3.5c4 0 8 3 8 7.6 0 4.800-4.200 9.400-8 9.400S4 16 4 11.100C4 6.500 8 3.500 12 3.500Z" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 3.5s6.500 6.700 6.500 11a6.500 6.500 0 0 1-13 0c0-4.300 6.500-11 6.500-11Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7.500V12l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.500" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="1" fill="currentColor"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M7 3.500h6.500L18.500 8.500V19a1.500 1.500 0 0 1-1.500 1.500H7A1.500 1.500 0 0 1 5.500 19V5A1.500 1.500 0 0 1 7 3.500Z M13.500 3.500v5h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  </svg>
 
-<!-- ============ ICON SPRITE ============ -->
-<svg class="icon-sprite" aria-hidden="true">
-  <symbol id="icon-logo" viewBox="0 0 24 24"><path d="M12 2C9 2 7 5 7 8c0 2 .8 3.2 1.6 4.4C9.4 13.6 10 14.6 10 16.5c0 1.9-1 3-2.5 3.5M12 2c3 0 5 3 5 6 0 2-.8 3.2-1.6 4.4-.8 1.2-1.4 2.2-1.4 4.1 0 1.9 1 3 2.5 3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/><circle cx="12" cy="8.3" r="1.4" fill="currentColor"/></symbol>
-  <symbol id="icon-upload" viewBox="0 0 24 24"><path d="M12 15V4M12 4l-4 4M12 4l4 4M5 16v2a2 2 0 002 2h10a2 2 0 002-2v-2" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-  <symbol id="icon-image" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2.2" stroke="currentColor" stroke-width="1.6" fill="none"/><circle cx="8.5" cy="9.5" r="1.6" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M21 16l-5.2-5.2a1.8 1.8 0 00-2.5 0L4 20" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-  <symbol id="icon-chevron" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-  <symbol id="icon-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></symbol>
-  <symbol id="icon-download" viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-  <symbol id="icon-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.9" fill="none" stroke-linecap="round"/></symbol>
-  <symbol id="icon-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M20 20l-4.3-4.3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
-  <symbol id="icon-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M4.5 20c1.4-3.8 4.2-5.8 7.5-5.8s6.1 2 7.5 5.8" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round"/></symbol>
-  <symbol id="icon-activity" viewBox="0 0 24 24"><path d="M3 12h4l2.5-7L14 19l2.5-7H21" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-  <symbol id="icon-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M8 12.5l2.5 2.5L16 9.5" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-  <symbol id="icon-alert" viewBox="0 0 24 24"><path d="M12 3.5L21.5 20h-19L12 3.5z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round"/><path d="M12 9.5v5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="17.2" r="1" fill="currentColor"/></symbol>
-  <symbol id="icon-arrow-up" viewBox="0 0 24 24"><path d="M7 17L17 7M17 7H9M17 7v8" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-  <symbol id="icon-arrow-down" viewBox="0 0 24 24"><path d="M7 7l10 10M17 17H9m8 0V9" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-  <symbol id="icon-minus" viewBox="0 0 24 24"><path d="M5 12h14" stroke="currentColor" stroke-width="1.9" fill="none" stroke-linecap="round"/></symbol>
-  <symbol id="icon-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2m-9 0l1 13a2 2 0 002 2h6a2 2 0 002-2l1-13" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-  <symbol id="icon-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6" fill="none"/></symbol>
-  <symbol id="icon-layers" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5 9-5z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/><path d="M3 13l9 5 9-5M3 17.5l9 5 9-5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/></symbol>
-  <symbol id="icon-thermo" viewBox="0 0 24 24"><path d="M14 14.76V5a2 2 0 00-4 0v9.76a4 4 0 104 0z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round"/></symbol>
-  <symbol id="icon-crop" viewBox="0 0 24 24"><path d="M6 2v14a2 2 0 002 2h14M18 22V8a2 2 0 00-2-2H2" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></symbol>
-  <symbol id="icon-scissors" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.4" stroke="currentColor" stroke-width="1.5" fill="none"/><circle cx="6" cy="18" r="2.4" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M8.1 7.5L20 20M8.1 16.5L20 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
-  <symbol id="icon-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-  <symbol id="icon-pill" viewBox="0 0 24 24"><rect x="3" y="9.5" width="18" height="5" rx="2.5" transform="rotate(-35 12 12)" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M11 8.5l2 7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></symbol>
-  <symbol id="icon-ruler" viewBox="0 0 24 24"><rect x="2.5" y="7.5" width="19" height="9" rx="1.5" transform="rotate(-45 12 12)" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M8.5 10.5l1.4 1.4M11.5 7.5l1.4 1.4M14.5 4.5l1.4 1.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></symbol>
-  <symbol id="icon-file-pdf" viewBox="0 0 24 24"><path d="M7 2h7l5 5v13a2 2 0 01-2 2H7a2 2 0 01-2-2V4a2 2 0 012-2z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/><path d="M14 2v5h5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/></symbol>
-  <symbol id="icon-swap" viewBox="0 0 24 24"><path d="M4 8h13M17 8l-3.5-3.5M17 8l-3.5 3.5M20 16H7M7 16l3.5-3.5M7 16l3.5 3.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-  <symbol id="icon-spinner" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none" opacity=".18"/><path d="M21 12a9 9 0 00-9-9" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></symbol>
-  <symbol id="icon-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 109-9 9 9 0 00-7.4 3.9" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/><path d="M3 3v5h5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 8v4.5l3 2" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-</svg>
+  <div class="bg" aria-hidden="true">
+    <span class="bg__blob bg__blob--a"></span>
+    <span class="bg__blob bg__blob--b"></span>
+    <span class="bg__blob bg__blob--c"></span>
+    <span class="bg__grid"></span>
+  </div>
 
-<!-- ============ BACKGROUND ============ -->
-<div class="bg-layer" aria-hidden="true">
-  <div class="bg-orb bg-orb--a"></div>
-  <div class="bg-orb bg-orb--b"></div>
-  <div class="bg-orb bg-orb--c"></div>
-  <div class="bg-grid"></div>
-</div>
+  <a class="skip-link" href="#main">Skip to content</a>
 
-<!-- ============ TOP NAV ============ -->
-<header class="topbar">
-  <div class="topbar__inner">
-    <div class="brand">
-      <span class="brand__mark"><svg width="22" height="22"><use href="#icon-logo"/></svg></span>
-      <span class="brand__text">FootScan <em>AI</em></span>
-    </div>
+  <header class="topbar glass" role="banner">
+    <a class="brand" href="#/analyze" aria-label="FootScan AI, home">
+      <span class="brand__mark"><svg width="22" height="22"><use href="#i-logo" /></svg></span>
+      <span class="brand__name">FootScan<span class="brand__ai">AI</span></span>
+    </a>
 
-    <nav class="tabs" role="tablist" aria-label="Primary">
-      <button class="tabs__btn is-active" role="tab" aria-selected="true" data-view="analyze">
-        <svg width="16" height="16"><use href="#icon-activity"/></svg>Analyze
-      </button>
-      <button class="tabs__btn" role="tab" aria-selected="false" data-view="compare">
-        <svg width="16" height="16"><use href="#icon-swap"/></svg>Compare
-      </button>
-      <button class="tabs__btn" role="tab" aria-selected="false" data-view="patients">
-        <svg width="16" height="16"><use href="#icon-user"/></svg>Patients
-      </button>
+    <nav class="nav" aria-label="Primary">
+      <a class="nav__link" href="#/analyze" data-route="analyze"><svg width="18" height="18" aria-hidden="true"><use href="#i-scan" /></svg><span>Analyze</span></a>
+      <a class="nav__link" href="#/compare" data-route="compare"><svg width="18" height="18" aria-hidden="true"><use href="#i-compare" /></svg><span>Compare</span></a>
+      <a class="nav__link" href="#/patients" data-route="patients"><svg width="18" height="18" aria-hidden="true"><use href="#i-users" /></svg><span>Patients</span></a>
     </nav>
 
-    <div class="topbar__status" id="modelStatus" title="Backend health">
-      <span class="status-dot" id="statusDot"></span>
-      <span id="statusLabel">Checking…</span>
-    </div>
-  </div>
-</header>
-
-<!-- ============ MAIN ============ -->
-<main class="app">
-
-  <!-- ---------------- ANALYZE VIEW ---------------- -->
-  <section class="view is-active" id="view-analyze" data-view="analyze">
-    <div class="view-grid">
-
-      <!-- Control panel -->
-      <div class="glass panel panel--control" data-tilt-group>
-        <h2 class="panel__title"><svg width="18" height="18"><use href="#icon-upload"/></svg>Upload Scan</h2>
-
-        <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Upload foot scan image">
-          <input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp,image/bmp" hidden />
-          <div class="dropzone__empty" id="dropzoneEmpty">
-            <svg width="34" height="34"><use href="#icon-upload"/></svg>
-            <p><strong>Drop image</strong> or click to browse</p>
-            <span>JPG, PNG, WEBP — up to 15MB</span>
-          </div>
-          <div class="dropzone__preview" id="dropzonePreview" hidden>
-            <img id="previewImg" alt="Selected scan preview" />
-            <button class="chip-btn chip-btn--danger" id="clearImage" type="button">
-              <svg width="14" height="14"><use href="#icon-trash"/></svg>Remove
-            </button>
-          </div>
-        </div>
-
-        <label class="field">
-          <span class="field__label">Patient Name <em>(optional)</em></span>
-          <input type="text" id="patientName" placeholder="e.g. Jane Doe" autocomplete="off" />
-        </label>
-
-        <details class="accordion" open>
-          <summary>Settings &amp; Calibration <svg width="14" height="14"><use href="#icon-chevron"/></svg></summary>
-          <div class="accordion__body">
-            <div class="field">
-              <span class="field__label">View Type</span>
-              <div class="segmented" id="viewTypeSeg">
-                <button type="button" class="segmented__btn is-active" data-value="Plantar (Bottom)">Plantar</button>
-                <button type="button" class="segmented__btn" data-value="Dorsal (Top)">Dorsal</button>
-              </div>
-            </div>
-
-            <label class="field">
-              <span class="field__label">Image Preprocessing</span>
-              <select id="prepMethod">
-                <option value="None">None</option>
-                <option value="CLAHE">CLAHE</option>
-                <option value="Histogram Equalization">Histogram Equalization</option>
-              </select>
-            </label>
-
-            <label class="field">
-              <span class="field__label">Detection Sensitivity <output id="thresholdOut">0.50</output></span>
-              <input type="range" id="threshold" min="0.1" max="0.9" step="0.05" value="0.5" />
-            </label>
-
-            <div class="field-row">
-              <label class="field">
-                <span class="field__label">Reference (cm)</span>
-                <input type="number" id="refCm" value="1.0" step="0.1" min="0" />
-              </label>
-              <label class="field">
-                <span class="field__label">Reference (px)</span>
-                <input type="number" id="refPx" value="38.46" step="0.01" min="0" />
-              </label>
-            </div>
-          </div>
-        </details>
-
-        <button class="btn btn--primary btn--block" id="analyzeBtn" type="button">
-          <svg width="17" height="17"><use href="#icon-activity"/></svg>
-          <span>Run Full Analysis</span>
-        </button>
-
-        <div class="panel__divider"></div>
-
-        <h3 class="panel__subtitle">Clinical Report</h3>
-        <button class="btn btn--ghost btn--block" id="exportBtn" type="button" disabled>
-          <svg width="16" height="16"><use href="#icon-file-pdf"/></svg>
-          <span>Download PDF Report</span>
-        </button>
-      </div>
-
-      <!-- Results -->
-      <div class="results" id="analyzeResults">
-
-        <div class="empty-state glass" id="analyzeEmpty">
-          <div class="empty-state__icon"><svg width="46" height="46"><use href="#icon-image"/></svg></div>
-          <h3>No analysis yet</h3>
-          <p>Upload a plantar or dorsal foot scan and run analysis to see segmentation, measurements and a SINBAD-based severity score.</p>
-        </div>
-
-        <div id="analyzeContent" hidden>
-          <div class="status-banner glass" id="statusBanner">
-            <div class="status-banner__left">
-              <span class="status-banner__icon" id="statusIcon"><svg width="26" height="26"><use href="#icon-check"/></svg></span>
-              <div>
-                <div class="status-banner__label">Overall Status</div>
-                <div class="status-banner__value" id="statusValue">—</div>
-              </div>
-            </div>
-            <div class="status-banner__badges">
-              <span class="badge" id="severityBadge">—</span>
-              <span class="badge badge--outline" id="sinbadBadge">SINBAD —/6</span>
-            </div>
-          </div>
-
-          <div class="metric-grid">
-            <div class="metric-card glass" data-tilt>
-              <svg class="metric-card__icon" width="20" height="20"><use href="#icon-ruler"/></svg>
-              <div class="metric-card__label">Wound Area</div>
-              <div class="metric-card__value"><span id="metricArea">0.00</span> cm²</div>
-            </div>
-            <div class="metric-card glass" data-tilt>
-              <svg class="metric-card__icon" width="20" height="20"><use href="#icon-layers"/></svg>
-              <div class="metric-card__label">Shape</div>
-              <div class="metric-card__value" id="metricShape">—</div>
-            </div>
-            <div class="metric-card glass" data-tilt>
-              <svg class="metric-card__icon" width="20" height="20"><use href="#icon-thermo"/></svg>
-              <div class="metric-card__label">Tissue Color</div>
-              <div class="metric-card__value" id="metricColor">—</div>
-            </div>
-            <div class="metric-card glass" data-tilt>
-              <svg class="metric-card__icon" width="20" height="20"><use href="#icon-clock"/></svg>
-              <div class="metric-card__label">Est. Healing</div>
-              <div class="metric-card__value"><span id="metricHealing">0</span> days</div>
-            </div>
-          </div>
-
-          <div class="glass card treatment-card">
-            <h3 class="panel__subtitle"><svg width="16" height="16"><use href="#icon-pill"/></svg>Treatment Recommendation</h3>
-            <p id="treatmentText">—</p>
-          </div>
-
-          <h3 class="section-title">Detection Visualizations</h3>
-          <div class="viz-grid" id="vizGrid"></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ---------------- COMPARE VIEW ---------------- -->
-  <section class="view" id="view-compare" data-view="compare">
-    <div class="glass panel panel--wide">
-      <h2 class="panel__title"><svg width="18" height="18"><use href="#icon-swap"/></svg>Before &amp; After Comparison</h2>
-      <p class="panel__hint">Compare two scans of the same site to quantify healing progress. <span class="dot-legend dot-legend--blue"></span> Healed tissue &nbsp; <span class="dot-legend dot-legend--red"></span> New / worsened ulcer</p>
-
-      <div class="compare-grid">
-        <div class="dropzone dropzone--sm" id="dropzoneOld" tabindex="0" role="button" aria-label="Upload earlier scan">
-          <input type="file" id="fileOld" accept="image/png,image/jpeg,image/webp,image/bmp" hidden />
-          <div class="dropzone__empty" id="dropzoneOldEmpty">
-            <svg width="28" height="28"><use href="#icon-upload"/></svg>
-            <p><strong>Scan T1</strong> — earlier visit</p>
-          </div>
-          <div class="dropzone__preview" id="dropzoneOldPreview" hidden>
-            <img id="previewOldImg" alt="Earlier scan preview" />
-            <button class="chip-btn chip-btn--danger" id="clearOld" type="button"><svg width="14" height="14"><use href="#icon-trash"/></svg></button>
-          </div>
-        </div>
-
-        <div class="compare-grid__arrow"><svg width="22" height="22"><use href="#icon-swap"/></svg></div>
-
-        <div class="dropzone dropzone--sm" id="dropzoneNew" tabindex="0" role="button" aria-label="Upload later scan">
-          <input type="file" id="fileNew" accept="image/png,image/jpeg,image/webp,image/bmp" hidden />
-          <div class="dropzone__empty" id="dropzoneNewEmpty">
-            <svg width="28" height="28"><use href="#icon-upload"/></svg>
-            <p><strong>Scan T2</strong> — current visit</p>
-          </div>
-          <div class="dropzone__preview" id="dropzoneNewPreview" hidden>
-            <img id="previewNewImg" alt="Later scan preview" />
-            <button class="chip-btn chip-btn--danger" id="clearNew" type="button"><svg width="14" height="14"><use href="#icon-trash"/></svg></button>
-          </div>
-        </div>
-      </div>
-
-      <button class="btn btn--primary" id="compareBtn" type="button">
-        <svg width="17" height="17"><use href="#icon-swap"/></svg><span>Compare Scans</span>
+    <div class="topbar__tools">
+      <span class="status-pill" id="statusPill" data-state="unknown" role="status">
+        <span class="status-pill__dot" aria-hidden="true"></span>
+        <span class="status-pill__text" id="statusText">Checking…</span>
+      </span>
+      <button class="icon-btn" id="keyBtn" type="button" aria-label="Set API key" title="API key">
+        <svg width="18" height="18" aria-hidden="true"><use href="#i-key" /></svg>
+      </button>
+      <button class="icon-btn" id="themeBtn" type="button" aria-label="Switch to light theme" aria-pressed="false" title="Toggle theme">
+        <svg class="icon-moon" width="18" height="18" aria-hidden="true"><use href="#i-moon" /></svg>
+        <svg class="icon-sun" width="18" height="18" aria-hidden="true"><use href="#i-sun" /></svg>
       </button>
     </div>
+  </header>
 
-    <div class="empty-state glass" id="compareEmpty">
-      <div class="empty-state__icon"><svg width="46" height="46"><use href="#icon-swap"/></svg></div>
-      <h3>Nothing compared yet</h3>
-      <p>Upload two scans of the same wound taken at different times to visualize the healing delta.</p>
-    </div>
+  <div class="disclaimer" role="note" aria-label="Medical disclaimer">
+    <svg width="18" height="18" aria-hidden="true"><use href="#i-warn" /></svg>
+    <p><strong>Research use only. Not a medical device.</strong> FootScan AI is not clinically validated or cleared by any regulator. Do not use it to diagnose, triage or treat patients, and do not upload identifiable patient data to an instance you have not secured.</p>
+  </div>
 
-    <div class="compare-results" id="compareResults" hidden>
-      <div class="status-banner glass" id="compareBanner">
-        <div class="status-banner__left">
-          <span class="status-banner__icon" id="compareIcon"><svg width="26" height="26"><use href="#icon-activity"/></svg></span>
-          <div>
-            <div class="status-banner__label">Trend</div>
-            <div class="status-banner__value" id="compareStatus">—</div>
-          </div>
-        </div>
-      </div>
-      <div class="metric-grid metric-grid--3">
-        <div class="metric-card glass" data-tilt>
-          <div class="metric-card__label">Old Area</div>
-          <div class="metric-card__value"><span id="compareOldArea">0.00</span> cm²</div>
-        </div>
-        <div class="metric-card glass" data-tilt>
-          <div class="metric-card__label">New Area</div>
-          <div class="metric-card__value"><span id="compareNewArea">0.00</span> cm²</div>
-        </div>
-        <div class="metric-card glass" data-tilt>
-          <div class="metric-card__label">Change</div>
-          <div class="metric-card__value" id="compareChange">0.00 cm²</div>
-        </div>
-      </div>
-      <div class="viz-grid viz-grid--single">
-        <figure class="viz-card glass" data-tilt>
-          <div class="viz-card__frame"><img id="diffImg" alt="Difference map" /></div>
-          <figcaption>Difference Map</figcaption>
-        </figure>
-      </div>
-    </div>
-  </section>
+  <main id="main" class="main" tabindex="-1">
+    <noscript><p class="noscript glass">FootScan AI needs JavaScript. The REST API is documented at <a href="/api/docs">/api/docs</a>.</p></noscript>
+    <section id="view-analyze" class="view" data-view="analyze" hidden></section>
+    <section id="view-compare" class="view" data-view="compare" hidden></section>
+    <section id="view-patients" class="view" data-view="patients" hidden></section>
+  </main>
 
-  <!-- ---------------- PATIENTS VIEW ---------------- -->
-  <section class="view" id="view-patients" data-view="patients">
-    <div class="patients-grid">
-      <div class="glass panel panel--list">
-        <div class="panel__title-row">
-          <h2 class="panel__title"><svg width="18" height="18"><use href="#icon-user"/></svg>Patients</h2>
-          <button class="btn btn--icon" id="newPatientBtn" type="button" title="New patient">
-            <svg width="16" height="16"><use href="#icon-plus"/></svg>
-          </button>
-        </div>
-
-        <div class="search-field">
-          <svg width="15" height="15"><use href="#icon-search"/></svg>
-          <input type="text" id="patientSearch" placeholder="Search patients…" autocomplete="off" />
-        </div>
-
-        <form class="new-patient-form" id="newPatientForm" hidden>
-          <input type="text" id="newPatientName" placeholder="Patient full name" autocomplete="off" required />
-          <div class="new-patient-form__actions">
-            <button type="submit" class="btn btn--primary btn--sm">Add</button>
-            <button type="button" class="btn btn--ghost btn--sm" id="cancelNewPatient">Cancel</button>
-          </div>
-        </form>
-
-        <ul class="patient-list" id="patientList"></ul>
-        <p class="empty-hint" id="patientListEmpty" hidden>No patients yet — add one above.</p>
-      </div>
-
-      <div class="glass panel panel--detail" id="patientDetail">
-        <div class="empty-state empty-state--inline" id="patientDetailEmpty">
-          <div class="empty-state__icon"><svg width="40" height="40"><use href="#icon-user"/></svg></div>
-          <h3>Select a patient</h3>
-          <p>Choose a patient from the list, or add a new one, to view their healing trajectory and scan history.</p>
-        </div>
-
-        <div id="patientDetailContent" hidden>
-          <div class="panel__title-row">
-            <div>
-              <h2 class="panel__title" id="patientDetailName">—</h2>
-              <p class="panel__hint" id="patientDetailMeta">—</p>
-            </div>
-          </div>
-
-          <div class="add-visit glass-inset">
-            <div class="dropzone dropzone--sm" id="dropzoneTrack" tabindex="0" role="button" aria-label="Upload new visit scan">
-              <input type="file" id="fileTrack" accept="image/png,image/jpeg,image/webp,image/bmp" hidden />
-              <div class="dropzone__empty" id="dropzoneTrackEmpty">
-                <svg width="24" height="24"><use href="#icon-upload"/></svg>
-                <p>Add new visit scan</p>
-              </div>
-              <div class="dropzone__preview" id="dropzoneTrackPreview" hidden>
-                <img id="previewTrackImg" alt="New visit scan preview" />
-                <button class="chip-btn chip-btn--danger" id="clearTrack" type="button"><svg width="14" height="14"><use href="#icon-trash"/></svg></button>
-              </div>
-            </div>
-            <button class="btn btn--primary" id="addVisitBtn" type="button">
-              <svg width="16" height="16"><use href="#icon-history"/></svg><span>Add to History</span>
-            </button>
-          </div>
-
-          <div class="chart-card glass-inset">
-            <h3 class="panel__subtitle">Healing Trajectory</h3>
-            <canvas id="healingChart" height="160"></canvas>
-            <p class="empty-hint" id="chartEmptyHint">No scans recorded yet for this patient.</p>
-          </div>
-
-          <h3 class="panel__subtitle">Scan History</h3>
-          <div class="history-grid" id="historyGrid"></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <footer class="disclaimer">
-    Research and demonstration tool only. Severity scoring and treatment text are heuristic and have not been clinically validated or FDA cleared. Do not use for real diagnosis.
+  <footer class="footer">
+    <p>FootScan AI · ResNet34-UNet segmentation · SINBAD-style score and healing estimate are heuristics, not clinical guidance.</p>
+    <p><a href="/api/docs">API docs</a> · <a href="https://github.com/Sandeepsrinivasan-14/footscan-ai" rel="noopener noreferrer">Source</a> · MIT</p>
   </footer>
-</main>
 
-<!-- ============ LIGHTBOX ============ -->
-<div class="lightbox" id="lightbox" hidden>
-  <button class="lightbox__close" id="lightboxClose" type="button"><svg width="20" height="20"><use href="#icon-x"/></svg></button>
-  <img id="lightboxImg" alt="" />
-  <div class="lightbox__caption" id="lightboxCaption"></div>
-</div>
+  <dialog class="dialog glass" id="keyDialog" aria-labelledby="keyDialogTitle">
+    <form method="dialog" id="keyForm">
+      <h2 id="keyDialogTitle">API key</h2>
+      <p class="muted">This server requires an API key. It is kept in this tab's session storage only and sent as the <code>X-API-Key</code> header.</p>
+      <label class="field">
+        <span class="field__label">Key</span>
+        <input class="input" id="keyInput" type="password" autocomplete="off" spellcheck="false" />
+      </label>
+      <div class="dialog__actions">
+        <button class="btn btn--ghost" value="cancel" type="submit">Cancel</button>
+        <button class="btn btn--ghost" id="keyClear" value="clear" type="submit">Forget key</button>
+        <button class="btn btn--primary" id="keySave" value="save" type="submit">Save</button>
+      </div>
+    </form>
+  </dialog>
 
-<!-- ============ LOADING OVERLAY ============ -->
-<div class="loading-overlay" id="loadingOverlay" hidden>
-  <div class="loading-ring"><svg width="48" height="48"><use href="#icon-spinner"/></svg></div>
-  <p id="loadingText">Running inference…</p>
-</div>
-
-<!-- ============ TOASTS ============ -->
-<div class="toast-stack" id="toastStack" aria-live="polite"></div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.umd.min.js" integrity="sha512-WoViKhKD4qI2WruSZqv9+kvM4WfFhUMQCLN4QlDTt5aU56fLQy2gYoxWIqlEnXqJy/+Ac5q/hk1oWfqnMDhwMA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="js/app.js" defer></script>
+  <div class="toasts" id="toasts" role="region" aria-label="Notifications" aria-live="polite"></div>
 </body>
 </html>
