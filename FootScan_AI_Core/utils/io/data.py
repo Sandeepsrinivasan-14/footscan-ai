@@ -93,10 +93,10 @@ class DataGen:
 
     @staticmethod
     def change_color_space(image, label, color_space):
-        if color_space.lower() is 'hsi' or 'hsv':
+        if color_space.lower() in ('hsi', 'hsv'):
             image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
             label = cv2.cvtColor(label, cv2.COLOR_BGR2HSV)
-        elif color_space.lower() is 'lab':
+        elif color_space.lower() == 'lab':
             image = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
             label = cv2.cvtColor(label, cv2.COLOR_BGR2LAB)
         return image, label
@@ -190,9 +190,9 @@ def save_results(np_array, color_space, outpath, test_label_filenames_list):
     for filename in test_label_filenames_list:
         # predict_img = np.reshape(predict_img,(predict_img[0],predict_img[1]))
         pred = np_array[i]
-        # if color_space.lower() is 'hsi' or 'hsv':
+        # if color_space.lower() in ('hsi', 'hsv'):
         #     pred = cv2.cvtColor(pred, cv2.COLOR_HSV2RGB)
-        # elif color_space.lower() is 'lab':
+        # elif color_space.lower() == 'lab':
         #     pred = cv2.cvtColor(pred, cv2.COLOR_Lab2RGB)
         cv2.imwrite(outpath + filename, pred * 255.)
         i += 1
