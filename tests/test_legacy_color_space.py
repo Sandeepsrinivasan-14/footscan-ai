@@ -4,11 +4,24 @@ The original code used ``color_space.lower() is 'hsi' or 'hsv'``, which is alway
 so every colour space (including ``lab`` and ``rgb``) was converted to HSV.
 """
 
+import sys
+import types
+
 import cv2
 import numpy as np
 import pytest
 
-from FootScan_AI_Core.utils.io.data import DataGen
+# The legacy module imports matplotlib at the top, but only for plotting helpers. CI does not install
+# it, so stub it when missing; the colour-space code under test never touches it.
+try:
+    import matplotlib.pyplot  # noqa: F401
+except ImportError:
+    _mpl = types.ModuleType("matplotlib")
+    _mpl.pyplot = types.ModuleType("matplotlib.pyplot")
+    sys.modules.setdefault("matplotlib", _mpl)
+    sys.modules.setdefault("matplotlib.pyplot", _mpl.pyplot)
+
+from FootScan_AI_Core.utils.io.data import DataGen  # noqa: E402
 
 
 @pytest.fixture
