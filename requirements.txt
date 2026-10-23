@@ -6,7 +6,7 @@
 # retry that command yourself if you have a GPU and want the speedup).
 
 # ML / CV core
-segmentation-models-pytorch>=0.3.4,<0.4
+segmentation-models-pytorch>=0.5.0,<0.6
 # Pinned exactly: this version strictly requires albucore==0.0.17, which has no
 # `stringzilla` dependency. Later albumentations versions pull in newer albucore
 # versions that require stringzilla, which has no prebuilt Windows wheel and needs
