@@ -26,9 +26,9 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4 # lfs intentionally off: lint needs no weights
+      - uses: actions/checkout@v7 # lfs intentionally off: lint needs no weights
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
           cache: "pip"
@@ -46,9 +46,9 @@ jobs:
       # Git LFS is deliberately NOT fetched here: every LFS download counts against the repo's
       # free bandwidth quota, and the unit + API tests use a fake model. Real-weights tests run
       # in the manual `integration` job below.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
           cache: "pip"
@@ -71,7 +71,7 @@ jobs:
       - name: Unit + API tests (fake model, no weights needed)
         run: pytest -m "not integration" -v --cov=footscan --cov-report=term-missing
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: "22"
           cache: "npm"
@@ -96,7 +96,7 @@ jobs:
 
       - name: Upload Playwright report
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-report
           path: |
@@ -108,12 +108,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: [lint, test]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
 
       - name: Build slim runtime image (no weights)
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           target: runtime
@@ -148,11 +148,11 @@ jobs:
     if: github.event_name == 'workflow_dispatch' && inputs.run_integration
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           lfs: true
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
           cache: "pip"
