@@ -8,8 +8,8 @@
     "install:browsers": "playwright install --with-deps chromium"
   },
   "devDependencies": {
-    "@axe-core/playwright": "4.10.2",
-    "@playwright/test": "1.49.1"
+    "@axe-core/playwright": "4.14.0",
+    "@playwright/test": "1.64.1"
   },
   "type": "module"
 }
